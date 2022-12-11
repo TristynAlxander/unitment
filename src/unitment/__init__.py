@@ -2242,8 +2242,10 @@ class Measure:
           new_pref  = self._units_
           return _measure_.convert(new_pref)
         except: return _measure_
-      #def __neg__(self):
-      #def __pos__(self):
+      def __neg__(self):
+        return Measure(value=-1*self.value,error=self.error,units=self.units,imply=self.implied, _base_units_ = self._simplified_ == None )
+      def __pos__(self): 
+        return self
       #  Measure( value=pos(self.value),  )
       
       def sin(self):
@@ -2418,6 +2420,8 @@ class Measure:
           # Simplify Inputs
           _self_,_other_  = self._simplified_,other._simplified_
           # Check Dimensions
+          if( _self_.value==0 and   _self_.error==0): return other.__neg__()
+          if(_other_.value==0 and  _other_.error==0): return self
           if(_self_._units_.symbols != _other_._units_.symbols): raise IncompatibleUnitException("Incompatible Units: "+str(self._units_)+";"+str(_other_._units_))
           # Input Values
           x,dx = _self_.value  , _self_.error
@@ -2432,8 +2436,13 @@ class Measure:
           new_imply = self.implied or other.implied
           # Construct Measure
           _measure_ = Measure(value=new_value,error=new_error,units=new_units,imply=new_imply,_base_units_=True)
-          # If simplified units != unsimplified units, Convert
-          if(_self_._units_ != self._units_ ): 
+          # If not simple units, Convert
+          # If not identical units, simplify 
+          non_simple_self  =  _self_._units_._symbols_ != self._units_._symbols_  or  _self_._units_._magnitude_ !=  self._units_._magnitude_
+          #non_simple_other = _other_._units_._symbols_ != other._units_._symbols_ or _other_._units_._magnitude_ != other._units_._magnitude_
+          identical_units = self._units_._symbols_ == other._units_._symbols_ and self._units_._magnitude_ == other._units_._magnitude_
+          #if(identical_units and (non_simple_self or non_simple_other)):
+          if(identical_units and non_simple_self):
             try:    return _measure_.convert(self._units_)
             except: return _measure_
           else: return _measure_

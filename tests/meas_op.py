@@ -476,20 +476,14 @@ class TestMeasureOperators:
           5 - Measure("36(4)m")
       # Measure - 0
       if(True):
-        with pytest.raises(IncompatibleUnitException):
-          Measure("36(4)cm") - Decimal("0")
-        with pytest.raises(IncompatibleUnitException):
-          Measure("36(4)cm") - "0"
-        with pytest.raises(IncompatibleUnitException):
-          Measure("36(4)cm") - 0
+        assert Measure("36(4)cm") - Decimal("0") == Measure("36(4)cm")
+        assert Measure("36(4)cm") - "0"          == Measure("36(4)cm")
+        assert Measure("36(4)cm") - 0            == Measure("36(4)cm")
       # 0 - Measure
       if(True):
-        with pytest.raises(IncompatibleUnitException):
-          Decimal("0") - Measure("36(4)cm")
-        with pytest.raises(IncompatibleUnitException):
-          "0" - Measure("36(4)cm")
-        with pytest.raises(IncompatibleUnitException):
-          0 - Measure("36(4)cm")
+        assert Decimal("0") - Measure("36(4)cm")  == Measure("-36(4)cm")
+        assert "0" - Measure("36(4)cm")           == Measure("-36(4)cm")
+        assert 0 - Measure("36(4)cm")             == Measure("-36(4)cm")
     # Unit
     if(True):
       assert Measure("5 cm")-Unit("cm")   == Measure("4 cm")
