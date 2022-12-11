@@ -36,6 +36,10 @@ In such cases, this module may still be useful as a parser.
 
 ____________________________________________________________
 
+Consider supporting unitment on [patreon](www.patreon.com/user?u=83796428).
+
+____________________________________________________________
+
 # Quick Install
 
 `pip install unitment`

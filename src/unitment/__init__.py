@@ -515,7 +515,7 @@ class Unit:
     # Optional Implicit Arguments
     if(len(args)!=0):
       # Organize Inputs
-      args = [Decimal(_) if self._is_number_(_) else _ for _ in args]
+      args = [Decimal(_) if Unit._is_number_(_) else _ for _ in args]
       list_args = [_ for _ in args if(isinstance(_,(list,tuple)))]
       str_arg   = [_ for _ in args if isinstance(_,str)]
       dict_args = [_ for _ in args if isinstance(_,dict)]
@@ -628,7 +628,7 @@ class Unit:
         if(not allow_conversion and base_conversion!=None): base_magnitude, base_symbols, base_conversion = (1,[(derived_symbol,1)],None)
         # Distribute Derived Exponents into Base-Symbols.
         for base_numerator,base_exponent in base_symbols:
-          units,exponents = self._add_to_unit_exponent_lists_(units,exponents,base_numerator,base_exponent,derived_exponent)
+          units,exponents = Unit._add_to_unit_exponent_lists_(units,exponents,base_numerator,base_exponent,derived_exponent)
         # Modify Magnitude for Base Unit Conversion
         magnitude_modifier,base_magnitude,derived_exponent =_type_corrections_(magnitude_modifier,base_magnitude,derived_exponent)
         magnitude_modifier = magnitude_modifier*(base_magnitude**derived_exponent)
@@ -1264,7 +1264,7 @@ class Unit:
     # Multiplication & Division Operators
     def __mul__(self,other):
       # Default Functions
-      is_number = self._is_number_
+      is_number = Unit._is_number_
       is_unit   = lambda x: isinstance(x,Unit)
       # Defaults Values
       new_symbols,new_magnitude,new_definitions = [None]*3
@@ -1277,10 +1277,10 @@ class Unit:
         units,exponents = [],[]
         # Add Units & Exponents from Self
         for unit,exponent in self.symbols:
-          units,exponents = self._add_to_unit_exponent_lists_(units,exponents,unit,exponent)
+          units,exponents = Unit._add_to_unit_exponent_lists_(units,exponents,unit,exponent)
         # Add Units & Exponents from Other
         for unit,exponent in other.symbols:
-          units,exponents = self._add_to_unit_exponent_lists_(units,exponents,unit,exponent)
+          units,exponents = Unit._add_to_unit_exponent_lists_(units,exponents,unit,exponent)
         # Assign Values
         new_symbols     = tuple(zip(units,exponents))
         new_definitions = self._fix_def_(self._definitions_,other._definitions_)
@@ -1306,7 +1306,7 @@ class Unit:
     __rmul__ = __mul__
     def __truediv__(self,other):
       # Default Functions
-      is_number = self._is_number_
+      is_number = Unit._is_number_
       is_unit    = lambda x: isinstance(x,Unit)
       # Defaults Values
       new_symbols,new_magnitude,new_definitions = [None]*3
@@ -1328,10 +1328,10 @@ class Unit:
         units,exponents = [],[]
         # Add Units & Exponents from Self
         for unit,exponent in self.symbols:
-          units,exponents = self._add_to_unit_exponent_lists_(units,exponents,unit,exponent)
+          units,exponents = Unit._add_to_unit_exponent_lists_(units,exponents,unit,exponent)
         # Add Inverted Units & Exponents from Other
         for unit,exponent in other.symbols:
-          units,exponents = self._add_to_unit_exponent_lists_(units,exponents,unit,exponent,-1)
+          units,exponents = Unit._add_to_unit_exponent_lists_(units,exponents,unit,exponent,-1)
         # Assign Values
         new_symbols     = tuple(zip(units,exponents))
         new_definitions = self._fix_def_(self._definitions_,other._definitions_)
@@ -1347,7 +1347,7 @@ class Unit:
       return NotImplemented
     def __rtruediv__(self,other):
       # Default Functions
-      is_number = self._is_number_
+      is_number = Unit._is_number_
       is_unit    = lambda x: isinstance(x,Unit)
       # Defaults Values
       new_symbols,new_magnitude,new_definitions = [None]*3
@@ -1360,7 +1360,7 @@ class Unit:
         units,exponents = [],[]
         # Add Inverted Units & Exponents from Self
         for unit,exponent in self.symbols:
-          units,exponents = self._add_to_unit_exponent_lists_(units,exponents,unit,exponent,-1)
+          units,exponents = Unit._add_to_unit_exponent_lists_(units,exponents,unit,exponent,-1)
         # Assign Values
         new_symbols     = tuple(zip(units,exponents))
         new_definitions = self._definitions_
@@ -1387,7 +1387,7 @@ class Unit:
     # Exponents
     def __pow__(self,other):
       # Default Functions
-      is_number = self._is_number_
+      is_number = Unit._is_number_
       is_unit    = lambda x: isinstance(x,Unit)
       is_measure = lambda x: isinstance(x,Measure)
       # Get Exponent
@@ -1658,7 +1658,7 @@ class Measure:
       Note: Error Propagation is calculated via a Taylor Series Expansion. 
       '''
       if(self._variance_ == None and self.value != None):
-        error_decimal = self._uncertain_digit_magnitude_(self.value)*Decimal("5")/Decimal("10")
+        error_decimal = Measure._uncertain_digit_magnitude_(self.value)*Decimal("5")/Decimal("10")
         _,error = _type_corrections_(self.value,error_decimal)
         return error
       return _sqrt_(self._variance_)
@@ -1675,7 +1675,7 @@ class Measure:
       # Corrections
       if(isinstance(err,str)): err = Decimal(err)
       if(self.value != None): 
-        if(self._implied_): err = self._uncertain_digit_magnitude_(self.value)*Decimal("5")/Decimal("10")
+        if(self._implied_): err = Measure._uncertain_digit_magnitude_(self.value)*Decimal("5")/Decimal("10")
         self._val_,err = _type_corrections_(self._val_,err)
       # Assign
       self._variance_ = err**2
@@ -1753,7 +1753,7 @@ class Measure:
       if(units==None and value_error==None):
         # Get Value
         i=len(measure_str)
-        while( not _is_(self._parse_value_error_,measure_str[:i],notation) ):
+        while( not _is_(Measure._parse_value_error_,measure_str[:i],notation) ):
           i=i-1
           if(i<=0): 
             break
@@ -1763,18 +1763,18 @@ class Measure:
         
       # Split Value & Error
       if(has_parenthetical):
-        value,error,value_str,error_str = self._parse_value_error_(value_error,notation)
-        error = self._uncertain_digit_magnitude_(value_str)*error
+        value,error,value_str,error_str = Measure._parse_value_error_(value_error,notation)
+        error = Measure._uncertain_digit_magnitude_(value_str)*error
         #value = Decimal(value_error[:value_error.index("(")] + value_error[value_error.index(")"):].strip(")"))
-        #error = self._uncertain_digit_magnitude_(value)*Decimal(value_error[value_error.index("("):value_error.index(")")].strip("("))
+        #error = Measure._uncertain_digit_magnitude_(value)*Decimal(value_error[value_error.index("("):value_error.index(")")].strip("("))
       elif(has_plusminus): 
-        value,error,value_str,error_str = self._parse_value_error_(value_error,notation)
+        value,error,value_str,error_str = Measure._parse_value_error_(value_error,notation)
       else:
         if(value_error==""): 
           value = None
           error = None
         else:
-          value,error,value_str,error_str = self._parse_value_error_(value_error,notation)
+          value,error,value_str,error_str = Measure._parse_value_error_(value_error,notation)
       
       # Set Self Values & Units 
       magnitude = value if(self.value!=None and value!=None) else 1
@@ -1793,8 +1793,8 @@ class Measure:
       # Rounded Value
       if(uncertain_places!=True):
         place_magnitude = Decimal("1"+(uncertain_places-1)*"0")
-        value_magnitude = self._certain_digit_magnitude_(value)
-        error_magnitude = self._certain_digit_magnitude_(self.error)
+        value_magnitude = Measure._certain_digit_magnitude_(value)
+        error_magnitude = Measure._certain_digit_magnitude_(self.error)
         if(value_magnitude<=error_magnitude): log.debug("Value and Error_magnitude are very close.")
         if(value_magnitude<place_magnitude/error_magnitude): log.debug("Rounds Non-Decimal Digit.")
         value = round(value/error_magnitude*place_magnitude)*error_magnitude/place_magnitude
@@ -1813,7 +1813,7 @@ class Measure:
         # Round error
         if(uncertain_places!=True):
           place_magnitude = Decimal("1"+(uncertain_places-1)*"0")
-          error_magnitude = self._certain_digit_magnitude_(error)
+          error_magnitude = Measure._certain_digit_magnitude_(error)
           error           = round(error / error_magnitude * place_magnitude) * error_magnitude / place_magnitude
         
         #Plus Minus Format
@@ -1822,9 +1822,9 @@ class Measure:
         #Parenthetic Format
         elif(notation == 1):
           if(uncertain_places!=True):
-            error_str = "("+str(Measure._pretty_decimal_(error / self._uncertain_digit_magnitude_(self.value)))[:uncertain_places]+")"
+            error_str = "("+str(Measure._pretty_decimal_(error / Measure._uncertain_digit_magnitude_(self.value)))[:uncertain_places]+")"
           else:
-            error_str = "("+str(Measure._pretty_decimal_(error / self._uncertain_digit_magnitude_(self.value)))+")"
+            error_str = "("+str(Measure._pretty_decimal_(error / Measure._uncertain_digit_magnitude_(self.value)))+")"
       
       # Assemble Value with error
       measure_str = value_str + error_str
@@ -2071,8 +2071,8 @@ class Measure:
           dx,dy = _type_corrections_(_self_.error,_other_.error)
           
           # Check Value & Error
-          eq_value  = self._dec_isclose_( x, y) if(isinstance ( x, Decimal) ) else cmath.isclose( x, y)
-          eq_error  = self._dec_isclose_(dx,dy) if(isinstance (dx, Decimal) ) else cmath.isclose(dx,dy)
+          eq_value  = Measure._dec_isclose_( x, y) if(isinstance ( x, Decimal) ) else cmath.isclose( x, y)
+          eq_error  = Measure._dec_isclose_(dx,dy) if(isinstance (dx, Decimal) ) else cmath.isclose(dx,dy)
           
           # Implied Error
           imp_error = self.implied or other.implied
