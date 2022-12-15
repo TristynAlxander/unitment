@@ -74,12 +74,6 @@ if(True):
 
 class TestUnitInit:
   
-  # Measure("2(1) * 3 * 5 * m^2")
-  
-  def test_examples(self):
-    assert Unit("1e6 fish").magnitude == Unit("fish", magnitude=1e6).magnitude == Unit("1000000 fish").magnitude == Unit("10^6 fish").magnitude
-    assert Unit("m/s").symbols == Unit("m s^-1").symbols == Unit(numerators=("m",),denominators=("s",)).symbols == Unit(numerators=(("m",1),),denominators=(("s",1),)).symbols == Unit(symbols=(("m",1),("s",-1),)).symbols
-  
   # Initialization
   def test_init_empty(self):
     assert Unit() == Unit(None)

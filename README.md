@@ -177,13 +177,34 @@ These more well-defined units are considered obscure and non-metric (even when u
 Generally, users do not need to define custom units. If a user wants to use some arbitrary unit such as `Unit("fish")`, the module is fully capable of managing that. 
 It is also trivial to add magnitudes to arbitrary units (e.g. `Unit("10^6 fish")`), so some users may find it simpler to replace prefixes `.replace("Mfish","10^6 fish")`.
 Moreover, the module has a number of predefined sets of non-standard units `Unit.IMPERIAL_UNITS`, `Unit.PRESSURE_UNITS`, `Unit.CONCENTRATION_UNITS` that can be loaded into the Unit or Measure class with an additional argument or the keywords `defs` or `definitions`.
-Still, users may need to define custom units when dealing with non-standard derived units. Derived units must be defined to be converted to their base units. 
 
-While not required, base units are commonly metric. This module considers metric base units to be units without a prefix. 
-This is important any unit defined in terms of prefixed-metric-base units (i.e. kg's) may have unexpected behavior.
-Additionally, this module does not infer prefiexs. If you define a unit that can be used with prefiexs, the prefixed unit must also be defined (It is trivial to do this in a loop).
+    u = Unit("ft",Unit.IMPERIAL_UNITS)
+    m = Measure("3 ft",Unit.IMPERIAL_UNITS)
 
-Custom context dependent units are a rare case. In addition to the magnitude and base units, they require a user to define a selector function and at least two conversion functions. 
+While arbitrary units are handled on the fly, some users may need to define custom units when dealing with non-standard derived units or prefixed units. 
+Of course units are handled dynamically in the module, so units only need to be defined for simplifications, decompositions, or conversions.
+Again, metric units are defined by default, so defining units is generally unnecessary. Still, users can define arbitrary derived or prefixed units:
+
+    weird_unit_dict = {
+      # Symbol      Mult              Base-Symbol   Function
+      'mu'       : ( Decimal("1e-3"), (('u',1),),  None),
+      'ku'       : ( Decimal("1e3"),  (('u',1),),  None),
+      }
+    x = Measure("5 ku",weird_unit_dict).convert("u")
+    y = Measure("5 ku",weird_unit_dict).convert("mu",weird_unit_dict)
+
+If defining a derived unit in terms of metric units it's worth noting that the module considers metric base units to be units without a prefix. 
+This is important. Any unit defined in terms of prefixed-metric base-units (i.e. kg's) may have unexpected behavior.
+
+    weird_unit_dict = {
+      # Symbol      Mult             Base-Symbol   Function
+      'u'       : ( Decimal(1),      (('g',-1),),  None),
+      'v'       : ( Decimal("1e3"),  (('s',-2),),  None),
+      }
+    
+    x = Measure("5 v",weird_unit_dict)
+
+An even rarer case are custom context dependent units. In addition to the magnitude and base units, they require a user to define a selector function and at least two conversion functions. 
 The selector function simply determines the behavior (the conversion functions used) given the exponent. The conversion functions are to and from base units. 
 
 As an example, here are some metric units already included by default:
@@ -207,10 +228,8 @@ As an example, here are some metric units already included by default:
       else:
         raise AmbiguousUnitException(f"Failed to Decompose: Exponent of \u00B0C != 1,0,-1. Cannot Deconvolute.")
     weird_unit_dict = {
-      # Symbol      Mult             Base-Symbol   Function                   Text          Dimension       
-      'Hz'      : ( Decimal(1),      (('s',-1),),  None,                      'Hertz',      'Frequency'   ),
-      'kHz'     : ( Decimal("1e3"),  (('s',-1),),  None,                      'kilohertz',  'Frequency'   ),
-      "degC"    : ( Decimal(1),      (('K',1),),   DEGREES_CELSIUS_SELECTOR,  'Celsius',    'Temperature' ),
+      # Symbol      Mult             Base-Symbol   Function                 
+      "degC"    : ( Decimal(1),      (('K',1),),   DEGREES_CELSIUS_SELECTOR),
       }
     
     x = Measure("5 kHz",weird_unit_dict)

@@ -78,7 +78,6 @@ class TestMeasureOperatorsMul:
   # sig**2 = y**2 dx**2 + x**2 dy **2
   # 
   
-  
   def test_measure_measure_mul(self):
     # Measure (Explicit Error) * Measure (Explicit Error) = Measure (Explicit Error)
     if(True):

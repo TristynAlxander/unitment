@@ -118,6 +118,29 @@ class TestUnit:
   else: UNITS = ()
   
 class TestPracticals:
+  
+  def test_examples(self):
+    assert Unit("1e6 fish").magnitude == Unit("fish", magnitude=1e6).magnitude == Unit("1000000 fish").magnitude == Unit("10^6 fish").magnitude
+    assert Unit("m/s").symbols == Unit("m s^-1").symbols == Unit(numerators=("m",),denominators=("s",)).symbols == Unit(numerators=(("m",1),),denominators=(("s",1),)).symbols == Unit(symbols=(("m",1),("s",-1),)).symbols
+    
+    
+    weird_unit_dict = {
+      # Symbol      Mult              Base-Symbol   Function
+      'mu'       : ( Decimal("1e-3"), (('u',1),),  None),
+      'ku'       : ( Decimal("1e3"),  (('u',1),),  None),
+      }
+    x = Measure("5 ku",weird_unit_dict).convert("u")
+    y = Measure("5 ku",weird_unit_dict).convert("mu",weird_unit_dict)
+    
+    
+    
+    weird_unit_dict = {
+      # Symbol      Mult             Base-Symbol   Function
+      'u'       : ( Decimal(1),      (('g',-1),),  None),
+      'v'       : ( Decimal("1e3"),  (('s',-2),),  None),
+      }
+    x = Measure("5 v",weird_unit_dict)
+  
   # Assorted Past Failures
   def test_failures(self):
     # Past Failed Units
