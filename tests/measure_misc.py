@@ -71,6 +71,7 @@ if(True):
   import pytest
   from unitment import AmbiguousUnitException,IncompatibleUnitException,UnitException,Unit,Measure
   import unitment as measure
+  import unitment 
 
 # To-Do add Numpy Tests
 # https://numpy.org/doc/stable/reference/ufuncs.html
@@ -129,17 +130,58 @@ class TestPracticals:
       'mu'       : ( Decimal("1e-3"), (('u',1),),  None),
       'ku'       : ( Decimal("1e3"),  (('u',1),),  None),
       }
-    x = Measure("5 ku",weird_unit_dict).convert("u")
-    y = Measure("5 ku",weird_unit_dict).convert("mu",weird_unit_dict)
-    
-    
+    assert Measure("5 ku",weird_unit_dict).convert("u").value == Decimal("5e3")
+    assert Measure("5 ku",weird_unit_dict).convert("mu",weird_unit_dict).value == Decimal("5e6")
     
     weird_unit_dict = {
       # Symbol      Mult             Base-Symbol   Function
-      'u'       : ( Decimal(1),      (('g',-1),),  None),
+      'u'       : ( Decimal(1),      (('kg',-1),),  None),
       'v'       : ( Decimal("1e3"),  (('s',-2),),  None),
       }
-    x = Measure("5 v",weird_unit_dict)
+    assert Measure("5 u",weird_unit_dict).convert("kg-1") == Measure("5 kg-1")
+    assert Measure("5 v",weird_unit_dict).convert("s-2") == Measure("5e3 s-2")
+    
+    
+    
+    def DECIBEL_SELECTOR(exponent):
+      """
+      In non-under-water Acoustics the decible is defined as follows: 
+        dB = 20 log10( value / 20 uPa )
+      In base units: 
+        dB = 20 log10( value / (20e-6 kg^1 m^-1 s^-2 ) )
+      
+      To reverse this calculation solve for the initial value: 
+        value = 10^(dB / 20) * 20e-6 kg^1 m^-1 s^-2
+      """
+      
+      # Decibel Functions
+      def NUMERATOR_FROM_DECIBEL_TO_BASE(val):
+        val,scale,ref = unitment._type_corrections_(val,Decimal("20"),Decimal("20e-6"))
+        return 10**(val/scale) * ref
+      def NUMERATOR_TO_DECIBEL_FROM_BASE(val):
+        val,scale,ref = unitment._type_corrections_(val,Decimal("20"),Decimal("20e-6"))
+        return scale * (val/ref).log10()
+      # Most Function Units behave like normal units when on the denominator.
+      def DENOMINATOR_FROM_DECIBEL_TO_BASE(val):
+        return val
+      def DENOMINATOR_TO_DECIBEL_FROM_BASE(val):
+        return val
+      
+      # Select & Return Correct Function
+      if(exponent == 0): return (lambda x:x,lambda x:x)
+      if(exponent == 1):  return (   NUMERATOR_FROM_DECIBEL_TO_BASE ,   NUMERATOR_TO_DECIBEL_FROM_BASE )
+      if(exponent == -1): return ( DENOMINATOR_FROM_DECIBEL_TO_BASE , DENOMINATOR_TO_DECIBEL_FROM_BASE )
+      else:
+        raise ValueError(f"Failed to Decompose: Exponent of dB != 1,0,-1. Cannot Deconvolute.")
+    
+    dB_dict = {
+      # Symbol      Mult        Base-Symbol                    Function
+      'dB'       : ( 1,         (('kg',1),('m',-1),('s',-2)),  DECIBEL_SELECTOR),
+      }
+    
+    assert Measure("5 dB",dB_dict).convert("uPa").value == (Decimal(10)**(Decimal(5)/Decimal(20)))*Decimal("20")
+    
+    
   
   # Assorted Past Failures
   def test_failures(self):

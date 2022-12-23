@@ -251,11 +251,14 @@ class Unit:
     # FORWARD means to base units
     # REVERSE means from base units.
     
+    
+    
     # Unit Conversion Selectors and Functions 
     def DEGREES_CELSIUS_SELECTOR(exponent):
       if(exponent == 0): return (lambda x:x,lambda x:x)
       # Degrees Celsius Functions
       def NUMERATOR_FORWARD_CELSIUS(val):
+        # Kelvin = degC + abs_zero
         val,abs_zero =_type_corrections_(val,Decimal("273.15"))
         return val+abs_zero
       def NUMERATOR_REVERSE_CELSIUS(val):
@@ -465,34 +468,7 @@ class Unit:
       #"% (w/v)" == g/100mL
       }
     
-    # TO-Do, TODO, todo Decibels? 
-    """
-    # decibels 
-    def DECIBEL_SELECTOR(exponent):
-    if(exponent == 0): return (lambda x:x,lambda x:x)
-    # Decibel Functions
-    def NUMERATOR_FROM_DECIBEL_TO_BASE(val):
-      # In acustics 20 micropascals is the standard reference. 
-      ref = Decimal("20e-6")
-      # ref = Unit("20uP") 
-      # I don' think this would work, and that's a problem because it's the most natural way of doing it. 
-      # What if I use that then make the conversion unitless? That might work.
-      return ref*10**(val/10)
-    def NUMERATOR_TO_DECIBEL_FROM_BASE(val):
-      # In acustics 20 micropascals is the standard reference. 
-      ref = Decimal("20e-6")
-      return 10*((val/ref).log10())
-    # Most Function Units behave like normal units when on the denominator.
-    def DENOMINATOR_FROM_DECIBEL_TO_BASE(val):
-      return val
-    def DENOMINATOR_TO_DECIBEL_FROM_BASE(val):
-      return val
-    # Select & Return Correct Function
-    if(exponent == 1):  return (NUMERATOR_FROM_DECIBEL_TO_BASE,NUMERATOR_TO_DECIBEL_FROM_BASE)
-    if(exponent == -1): return (DENOMINATOR_FROM_DECIBEL_TO_BASE,DENOMINATOR_TO_DECIBEL_FROM_BASE)
-    else:
-      raise ValueError(f"Failed to Decompose: Exponent of \u00B0C != 1,0,-1. Cannot Deconvolute.")
-    #"""
+    
   
   # Initialization 
   __slots__ = ("_symbols_","_magnitude_","_conversion_","_definitions_","_decomposed_")
@@ -1558,10 +1534,10 @@ class Measure:
       # Cast New Unit as Unit
       if(Unit.is_unit(new_unit)):
         new_unit = Unit(new_unit,defs=defs,definitions=definitions)
-        new_base_unit = new_unit._decomposed_
-        self_base_unit  = self._units_._decomposed_
+        new_base_unit  = new_unit._decomposed_
+        self_base_unit = self._units_._decomposed_
       else: raise TypeError("Cannot be cast as Unit")
-      if(self_base_unit.symbols != new_base_unit.symbols): raise IncompatibleUnitException("Incompatible Units: "+str(self._units_)+";"+str(new_base_unit))
+      if(self_base_unit.symbols != new_base_unit.symbols): raise IncompatibleUnitException(f"Incompatible Units: {self._units_}  =/=  {new_unit} ({self_base_unit}  =/=  {new_base_unit})")
       
       # Convert Self to Base Units
       if(True):
@@ -2691,7 +2667,8 @@ class Measure:
           # Construct Measure
           _measure_ = Measure(value=new_value,error=new_error,units=new_units,imply=new_imply,_base_units_=True)
           # If simplified units != unsimplified units, Convert
-          if(_self_._units_ != self._units_ ): 
+          non_simple_self  =  _self_._units_._symbols_ != self._units_._symbols_  or  _self_._units_._magnitude_ !=  self._units_._magnitude_
+          if(non_simple_self): 
             try:    return _measure_.convert(self._units_**y)
             except: return _measure_
           else: return _measure_

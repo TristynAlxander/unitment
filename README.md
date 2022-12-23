@@ -165,13 +165,6 @@ As an example, each of the following instantiated units have the same magnitudes
     Unit("1000000 fish")
     Unit("10^6 fish")
 
-
-**Context Dependent Units:**
-Some function units, most notably the Decibel (dB), have a context dependent meaning; thus, the user is responsible for defining them prior to use.
-In the case of the decibel , the function is `10*((val/ref).log10)` where `val` is value being measured and `ref` is the context dependent reference. 
-More well-defined versions of the Decibels or Bels do exist, for example a milli-watt microbel (uBmW) is context independent and defined with respect to a milli-watt reference. 
-These more well-defined units are considered obscure and non-metric (even when using a metric reference); thus, the user is responsible for defining them prior to use. 
-
 ### Defining Units
 
 Generally, users do not need to define custom units. If a user wants to use some arbitrary unit such as `Unit("fish")`, the module is fully capable of managing that. 
@@ -193,46 +186,66 @@ Again, metric units are defined by default, so defining units is generally unnec
     x = Measure("5 ku",weird_unit_dict).convert("u")
     y = Measure("5 ku",weird_unit_dict).convert("mu",weird_unit_dict)
 
-If defining a derived unit in terms of metric units it's worth noting that the module considers metric base units to be units without a prefix. 
-This is important. Any unit defined in terms of prefixed-metric base-units (i.e. kg's) may have unexpected behavior.
+If defining a derived unit in terms of metric units it's worth noting that the module considers metric base units to be units without a prefix (except kg). 
+This is important. Any unit defined in terms of prefixed-metric base-units (except kg's) may have unexpected behavior. kg, not g, is considered the base unit of mass.
 
     weird_unit_dict = {
       # Symbol      Mult             Base-Symbol   Function
-      'u'       : ( Decimal(1),      (('g',-1),),  None),
+      'u'       : ( Decimal(1),      (('kg',-1),),  None),
       'v'       : ( Decimal("1e3"),  (('s',-2),),  None),
       }
     
-    x = Measure("5 v",weird_unit_dict)
+    x = Measure("5 u",weird_unit_dict).convert("kg-1")
+    x = Measure("5 v",weird_unit_dict).convert("s-2")
 
-An even rarer case are custom context dependent units. In addition to the magnitude and base units, they require a user to define a selector function and at least two conversion functions. 
-The selector function simply determines the behavior (the conversion functions used) given the exponent. The conversion functions are to and from base units. 
+**Context Dependent Units:**
+Some function units, most notably the Decibel (dB) or Bel (B), have a context dependent meaning; thus, the user is responsible for defining them prior to use.
+The Decibel has multiple definitions depending on whether it is a power (`10*((val/ref).log10)`) or amplitude (`20*((val/ref).log10)`) measurement.
+Moreover, the reference (`ref`) is extremely context specific. For example, a milli-watt microbel (uBmW) is a context independent power measurement defined with respect to a milli-watt reference. 
+Despite its context independence, it is considered obscure and non-metric (even when using a metric reference); thus, the user is responsible for defining such units prior to use. 
 
-As an example, here are some metric units already included by default:
+To define a context dependent unit the magnitude, base units, and selector-conversion functions are required. 
+The selector function simply determines the behavior (the conversion functions used) given the exponent. 
+The conversion functions are to and from base units. As an example:
 
-    def DEGREES_CELSIUS_SELECTOR(exponent):
-      if(exponent == 0): return (lambda x:x,lambda x:x)
-      # Degrees Celsius Functions
-      def NUMERATOR_FORWARD_CELSIUS(val):
-        val,abs_zero =val,Decimal("273.15")
-        return val+abs_zero
-      def NUMERATOR_REVERSE_CELSIUS(val):
-        val,abs_zero = val,Decimal("273.15")
-        return val-abs_zero
-      def DENOMINATOR_FORWARD_CELSIUS(val):
+    def DECIBEL_SELECTOR(exponent):
+      """
+      In non-under-water Acoustics the decible is defined as follows: 
+        dB = 20 log10( value / 20 uPa )
+      In base units: 
+        dB = 20 log10( value / (20e-6 kg^1 m^-1 s^-2 ) )
+      
+      To reverse this calculation solve for the initial value: 
+        value = 10^(dB / 20) * 20e-6 kg^1 m^-1 s^-2
+      """
+      
+      # Decibel Functions
+      def NUMERATOR_FROM_DECIBEL_TO_BASE(val):
+        val,scale,ref = unitment._type_corrections_(val,Decimal("20"),Decimal("20e-6"))
+        return 10**(val/scale) * ref
+      def NUMERATOR_TO_DECIBEL_FROM_BASE(val):
+        val,scale,ref = unitment._type_corrections_(val,Decimal("20"),Decimal("20e-6"))
+        return scale * (val/ref).log10()
+      # Most Function Units behave like normal units when on the denominator.
+      def DENOMINATOR_FROM_DECIBEL_TO_BASE(val):
         return val
-      def DENOMINATOR_REVERSE_CELSIUS(val):
+      def DENOMINATOR_TO_DECIBEL_FROM_BASE(val):
         return val
+      
       # Select & Return Correct Function
-      if(exponent == 1):  return (NUMERATOR_FORWARD_CELSIUS,NUMERATOR_REVERSE_CELSIUS)
-      if(exponent == -1): return (DENOMINATOR_FORWARD_CELSIUS,DENOMINATOR_REVERSE_CELSIUS)
+      if(exponent == 0): return (lambda x:x,lambda x:x)
+      if(exponent == 1):  return (   NUMERATOR_FROM_DECIBEL_TO_BASE ,   NUMERATOR_TO_DECIBEL_FROM_BASE )
+      if(exponent == -1): return ( DENOMINATOR_FROM_DECIBEL_TO_BASE , DENOMINATOR_TO_DECIBEL_FROM_BASE )
       else:
-        raise AmbiguousUnitException(f"Failed to Decompose: Exponent of \u00B0C != 1,0,-1. Cannot Deconvolute.")
-    weird_unit_dict = {
-      # Symbol      Mult             Base-Symbol   Function                 
-      "degC"    : ( Decimal(1),      (('K',1),),   DEGREES_CELSIUS_SELECTOR),
+        raise ValueError(f"Failed to Decompose: Exponent of dB != 1,0,-1. Cannot Deconvolute.")
+    
+    dB_dict = {
+      # Symbol      Mult        Base-Symbol                    Function
+      'dB'       : ( 1,         (('kg',1),('m',-1),('s',-2)),  DECIBEL_SELECTOR),
       }
     
-    x = Measure("5 kHz",weird_unit_dict)
+    x = Measure("5 dB",dB_dict).convert("uPa")
+
 
 ***If you make your a unit dictionary you'd like included in the package, please reach out to me.***
 
@@ -278,7 +291,8 @@ Note: The unit "C" is reserved for Coulomb, but the module recognizes the degree
 
 One common gripe about the `convert` function is that it doesn't propagate unit definitions. 
 This results in situations where a conversion of inches to feet might be interpreted as an attempt to convert inches to femto-tonnes, resulting in an error: `Measure("12 in",Unit.IMPERIAL_UNITS).convert("ft")` throws a UnitException for incompatible units.
-The proper way to convert to any non-metric unit is to define the unit in either convert or the passed unit: `Measure("12 in",Unit.IMPERIAL_UNITS).convert("ft",Unit.IMPERIAL_UNITS)` or `Measure("12 in",Unit.IMPERIAL_UNITS).convert(Unit("ft",Unit.IMPERIAL_UNITS))`.
+This is because the user failed to re-define `"ft"` in the conversion function. 
+The proper way to convert to any non-metric unit is to define the unit in either convert or in the passed unit: `Measure("12 in",Unit.IMPERIAL_UNITS).convert("ft",Unit.IMPERIAL_UNITS)` or `Measure("12 in",Unit.IMPERIAL_UNITS).convert(Unit("ft",Unit.IMPERIAL_UNITS))`.
 
 # Less Frequently Asked Questions
 
