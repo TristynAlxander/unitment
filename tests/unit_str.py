@@ -74,6 +74,10 @@ if(True):
 
 class TestUnitStr:
   
+  # To-Do: This failed.
+  
+  
+  
   def test_parse(self):
     # Exponents of Different Forms
     assert Unit("10 u").symbols      == (('u', Decimal('1')),)
@@ -109,6 +113,10 @@ class TestUnitStr:
     assert Unit("3.14*10^5 * M g/mol")      == Unit(["M","g"],["mol"],"3.14e5")
     assert Unit("3.14\u00B710^5 M g/mol")   == Unit(["M","g"],["mol"],"3.14e5")
     assert Unit("3.14\u00D710^5 M g/mol")   == Unit(["M","g"],["mol"],"3.14e5")
+    # Multipliers in Units
+    assert Unit("3.14 M \u00D7 g / mol ") == Unit(["M","g"],["mol"],"3.14")
+    assert Unit("3.14 M \u00B7 g / mol ") == Unit(["M","g"],["mol"],"3.14")
+    assert Unit("3.14 M \u22C5 g / mol ") == Unit(["M","g"],["mol"],"3.14")
     # Limit x as Multiplier to Magnitude
     assert Unit("12*10^4 x U b") == Unit(["x","U","b"],[],"1.2e5")
     # Permit Magnitude Multiplier in Measure("24(3)*10^3 cm")
@@ -117,6 +125,8 @@ class TestUnitStr:
     # Empty numerators or denominators
     assert Unit("1/m2") == Unit([],["m","m"],1)
     assert Unit("m^-2") == Unit([],["m","m"],1)
+    assert Unit("m-2") == Unit([],["m","m"],1)
+    assert Unit("m\u22122") == Unit([],["m","m"],1)
     assert Unit("m2")   == Unit(["m","m"],[],1)
     assert Unit("m^2")  == Unit(["m","m"],[],1)
     # Magnitude

@@ -181,6 +181,12 @@ class TestPracticals:
     
     assert Measure("5 dB",dB_dict).convert("uPa").value == (Decimal(10)**(Decimal(5)/Decimal(20)))*Decimal("20")
     
+  
+  # To-Do: This failed.
+  # R  = Measure("8.31446261815324 J K-1 mol-1")
+  # R  = Measure("8.31446261815324 J K-1 mol-1")
+  # R  = Measure("8.31446261815324 J⋅K-1⋅mol-1")
+  # R  = Measure("8.31446261815324 J⋅K−1⋅mol−1")
     
   
   # Assorted Past Failures

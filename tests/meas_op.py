@@ -615,9 +615,14 @@ class TestMeasureOperators:
     g = Measure("6")
     assert Measure.log(g,base=f).implied == True
     assert Measure.log(3,base=f).implied == True
+    
     # Exceptions
     with pytest.raises(IncompatibleUnitException):
       Measure.log(Measure("12 mg"),base=Measure("2 mg"))
+  
+  def test_ln(self):
+    assert -0.02 < Measure("0.99").ln() < 0
+  
   
   # Trigonometry
   def test_sin(self):

@@ -811,13 +811,14 @@ class Unit:
     
   # String Converters
   if(True):
-    MULTIPLIERS = ["*","\u00B7","\u00D7"]
+    MULTIPLIERS = ["*","\u00B7","\u00D7","\u22C5"]
     
     # Parsing Associated Functions
     def _parse_(self,parsable_str):
       # Clean String 
       parsable_str = parsable_str.strip()
       parsable_str = parsable_str.replace("**","^")
+      parsable_str = parsable_str.replace("\u2212","-")
       # Handle Empty Strings
       if(parsable_str==""): return self
       # Find Magnitude Cut Index 
@@ -852,7 +853,7 @@ class Unit:
       numerators   = [(numerator,exponent)   for numerator,exponent   in numerators   if(numerator  !="" and exponent!=0)]
       denominators = [(denominator,exponent) for denominator,exponent in denominators if(denominator!="" and exponent!=0)]
       # Check For Non-Units
-      punctuation = "!\"#&'()*+, -./:;<=>?@[]^_`{|}~\u00B1\u2213\u00B7\u00D7"
+      punctuation = "!\"#&'()*+, -./:;<=>?@[]^_`{|}~\u00B1\u2213\u00B7\u00D7\u22C5\u2212"
       bad_numerators   = any([numerator   in punctuation for numerator  ,exponent in numerators])
       bad_denominators = any([denominator in punctuation for denominator,exponent in denominators])
       if(bad_numerators or bad_denominators): raise ValueError("Cannot Parse Unit.")
@@ -922,6 +923,7 @@ class Unit:
       '''
       # Format
       unit_str = str(unit_str)
+      for m in Unit.MULTIPLIERS: unit_str = unit_str.replace(m,"*")
       # Initialize Lists for Outputs
       numerator_list   = []
       denominator_list = []
@@ -2744,7 +2746,7 @@ class Measure:
         """ Returns logarithm of the argument with respect to Euler's constant for compatible units. Bad types return NotImplemented."""
         # Note: Number Type-Handling is all preformed in Measure._to_measure_(other), not in the individual operator function. 
         # Note: This Decimal is handled in log and required if self.value is Decimal
-        return Measure.log(Decimal(math.e),self)
+        return Measure.log(self,base=Decimal(math.e))
       def log10(self):
         """ Returns logarithm of the argument with respect to ten for compatible units. Bad types return NotImplemented."""
         # Note: Number Type-Handling is all preformed in Measure._to_measure_(other), not in the individual operator function. 
@@ -2784,4 +2786,10 @@ Number.register(Measure)
 
 if (__name__ == "__main__"):
   if(main_args.test):
+    
+    Measure("8.31446261815324 J⋅K-1⋅mol-1")
+    #assert Measure("8.31446261815324 J K-1 mol-1") == Measure("8.31446261815324 J*K-1*mol-1")
+    #assert Measure("8.31446261815324 J K-1 mol-1") == Measure("8.31446261815324 J⋅K-1⋅mol-1")
+    #assert Measure("8.31446261815324 J K-1 mol-1") == Measure("8.31446261815324 J⋅K−1⋅mol−1")
+    
     pass
