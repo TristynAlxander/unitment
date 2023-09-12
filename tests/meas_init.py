@@ -2197,6 +2197,12 @@ class TestMeasureInit:
         assert Measure(value="41", units=Unit("\u00B0F",definitions = Unit.IMPERIAL_UNITS)).convert("10 K").implied == True
       # From Celsius to Fahrenheit
       if(True):
+        # Defined in Convert
+        assert Measure(value="25", units="\u00B0C").convert(Unit("\u00B0F"),Unit.IMPERIAL_UNITS).value == Decimal("77")
+        assert Measure(value="25", units="\u00B0C").convert(Unit("\u00B0F"),Unit.IMPERIAL_UNITS).units == Unit("\u00B0F",definitions = Unit.IMPERIAL_UNITS)
+        assert Measure(value="25", units="\u00B0C").convert(Unit("\u00B0F"),Unit.IMPERIAL_UNITS).error == Decimal("0.9")
+        assert Measure(value="25", units="\u00B0C").convert(Unit("\u00B0F"),Unit.IMPERIAL_UNITS).implied == True
+        # Defined Unit
         assert Measure(value="25", units="\u00B0C").convert(Unit("\u00B0F",definitions = Unit.IMPERIAL_UNITS)).value == Decimal("77")
         assert Measure(value="25", units="\u00B0C").convert(Unit("\u00B0F",definitions = Unit.IMPERIAL_UNITS)).units == Unit("\u00B0F",definitions = Unit.IMPERIAL_UNITS)
         assert Measure(value="25", units="\u00B0C").convert(Unit("\u00B0F",definitions = Unit.IMPERIAL_UNITS)).error == Decimal("0.9")

@@ -1,9 +1,105 @@
-# Unitment
+# Introduction
 
-The `unitment` module provides support for dynamic unit (and error) management through `Unit` and `Measure` classes.
-The guiding philosophy of the module is to focus users on their maths, not units or code.
-The module is built to allow users to forget about units and unit management. 
-To that end, the module is extremely dynamic in many ways that provide notable advantages over other unit management modules:
+Unitment supports dynamic unit management so users can focus on what matters.
+
+
+**Install:**
+To get started, [download](https://www.python.org/downloads/) and install python, then open your terminal and run the following pip command:
+
+`pip install unitment` 
+
+**Example**:
+
+```
+from unitment import Unit,Measure
+
+distance = Measure("25 m")
+time     = Measure("5 s")
+speed    = distance / time
+print(speed)
+```
+
+Above is a simple script using unitment. Save this text to file as `example.py`. 
+Open the terminal wherever you saved the file, then run `python example.py`. 
+You can imagine how to edit the script for your own purpose.
+
+____________________________________________________________    
+____________________________________________________________    
+
+# Basics Features
+
+Unitment's core feature is **Dynamic Unit Management.** This allows users to use *any* units on the fly. 
+This includes arbitrary units like fish, rocks, pizza, happiness, etc. Users don't even need to define their units! 
+
+Unitment is ideal for scripting. It's **Intuitive and Adaptive**, so that even novice coders can use it.
+Measures can be defined several intuitive ways: `Measure("5 m")`, `Measure(5,"m")`, `Measure(value=5,units="m")`, etc.
+Adaptive typing makes coding more forgiving: `Measure("25 m")/Measure("5 s")`, `Measure("25 m")/"5s"`, etc.
+
+- **Spaces Required**
+  - `"ms"` is milliseconds
+  - `"m s"` is meter seconds
+- **Unit Conversions**
+  - Metric is Pre-Defined.
+  - Simplify with `measure.simplify()`
+  - Convert with `measure.convert(unit)`
+  - Abnormal Unit Dictionaries (*optional*)
+    - `Unit.IMPERIAL_UNITS`
+    - `Unit.PRESSURE_UNITS`
+
+Again, users never *need* to define units in unitment. 
+
+Still, a unit-dictionaries argument in instantiation or conversion can be convenient for automatic conversion to metric.
+In-fact, all math in unitment is converted to base-units before preformed. 
+This prevents silly errors like multiplying the Celsius temperature instead of the Kelvin temperature, 
+but it requires users to understand whether they intend to add 1°C or 1K.
+
+**Other Operations.** 
+In addition to the standard math operators, convert, and simplify; unitment the following functions: 
+`measure.is_simplified()`, `measure.sin()`, `measure.cos()`, `measure.exp()`, `measure.root()`, `measure.sqrt()`, `measure.log(base)`, `measure.ln()`, `measure.log10()`, and `measure1.approx(measure2)`.
+
+
+
+____________________________________________________________
+
+# Intermediate Features
+
+**What about NumPy?**
+NumPy is a popular package for doing math with matricies. 
+It's useful both for its widely-known notation and its efficient speed.
+If you're using NumPy for its widely-known notation, simply add the argument `dtype=numpy.dtype(Measure)` in your NumPy array.
+If you're using NumPy for its efficient speed, never use non-standard number types. 
+Use this module as a parser and converter then use `float(measure)` to convert to standard floats. 
+To that end a useful line of code might be:
+
+```
+# Step-By-Step
+list_of_measures         = [ Measure(str_measure)  for str_measure in list_of_str_measures ]
+list_of_measures_in_unit = [ measure.convert(unit) for measure     in list_of_measures     ]
+list_of_floats_in_unit   = [ float(measure)        for measure     in list_of_measures_in_unit ]
+# All at Once
+list_of_floats_in_unit = [float(Measure(str_measure).convert(unit)) for str_measure in list_of_str_measures]
+```
+
+**Conversions to Non-Metric Units**
+
+One common gripe about the `convert` function is that it doesn't propagate unit definitions. 
+This results in situations where a conversion of inches to feet might be interpreted as an attempt to convert inches to femto-tonnes, resulting in an error: `Measure("12 in",Unit.IMPERIAL_UNITS).convert("ft")` throws a UnitException for incompatible units.
+This is because the user failed to re-define `"ft"` in the conversion function. 
+The proper way to convert to any non-metric unit is to define the unit in either convert or in the passed unit: `Measure("12 in",Unit.IMPERIAL_UNITS).convert("ft",Unit.IMPERIAL_UNITS)` or `Measure("12 in",Unit.IMPERIAL_UNITS).convert(Unit("ft",Unit.IMPERIAL_UNITS))`.
+
+
+____________________________________________________________
+____________________________________________________________
+
+
+Consider supporting unitment on [patreon](https://www.patreon.com/user?u=83796428).
+
+____________________________________________________________
+____________________________________________________________
+
+
+
+# Technical Features
 
  - Unit Compatibility. This module works with *almost any* units. 
  While metric units are used by default, imperial units are defined as a class constant (`Measure("degF",Unit.IMPERIAL_UNITS)`). 
@@ -33,27 +129,6 @@ All that said, the choice of unit management module does depend on use-case.
 The general advise for users is to use this module for scripting simple math or conversions. 
 While this module may work for surprisingly complicated things, we recommend removing units altogether for advanced applications. 
 In such cases, this module may still be useful as a parser. 
-
-____________________________________________________________
-
-Consider supporting unitment on [patreon](https://www.patreon.com/user?u=83796428).
-
-____________________________________________________________
-
-# Quick Install
-
-`pip install unitment`
-
-# Quick Start Example
-
-    from unitment import Unit,Measure
-    
-    distance = Measure("25 m")
-    time     = Measure("5 s")
-    speed    = distance / time
-    
-
-____________________________________________________________
 
 
 ## Measure
@@ -98,15 +173,15 @@ As a result, extra propagation of error occurs where none should exist in analyt
 **Propagation of Error Equations:** 
 The propagation of error equation (the taylor-series expansion of the statistical moments) for a function with two inputs is as follows:
 
-var(f) = (∂f/∂x)^2 var(x) + (∂f/∂x) (∂f/∂y) covar(x) + (∂f/∂y)^2 var(y)
+var(f) = (∂f/∂x)<sup>2</sup> var(x) + (∂f/∂x) (∂f/∂y) covar(x) + (∂f/∂y)<sup>2</sup> var(y)
 
 Since the module is not context-aware, it must assume independent inputs; thus, this equation is more appropriate:
 
-var(f) = (∂f/∂x)^2 var(x) + (∂f/∂y)^2 var(y)
+var(f) = (∂f/∂x)<sup>2</sup> var(x) + (∂f/∂y)<sup>2</sup> var(y)
 
 That is the equation used by the module. For edification of the reader, this equation can be extended to multi-input function as follows:
 
-var(f) = Σ (∂f/∂xi)^2 var(xi)
+var(f) = Σ (∂f/∂xi)<sup>2</sup> var(x<sub>i</sub>)
 
 **Propagation of Error Failures:** 
 Since each of these are essentially the same equation all-be-it in slightly different contexts, they share the requirements of taylor-series expansions. 
@@ -253,17 +328,6 @@ ____________________________________________________________
 
 # Frequently Asked Questions
 
-## Can the module be used with NumPy/cmath? 
-
-Yes, but the extra efficiency from NumPy is lost. 
-If you're using the module for scripting purposes and are unconcerned about efficiency, simply use the argument `dtype=numpy.dtype(Measure)` in your NumPy array.
-If you are creating a more high performance program, use this module to parser/convert your initial input into your preferred units, then take the value of measures (as floats if they aren't already).
-
-Example:
-
-    m = Measure("5 mm")
-    a = numpy.array([m,m,m],dtype=numpy.dtype(Measure))
-
 
 ## What Types of numbers does it work with?
 
@@ -286,15 +350,6 @@ This module manages the difficult part; however, certain non-base units are inva
 The reason is the module cannot know what portion of the unit belongs to each component: e.g. `Measure("2 m") * Measure("5 degC") != Measure("5 m") * Measure("2 degC")`.
 Notice the module doesn't fail calculating `Measure("2 m") * Measure("5 degC")`. It simply doesn't back-convert to Celsius.
 Note: The unit "C" is reserved for Coulomb, but the module recognizes the degrees symbol. 
-
-## Conversions to Non-Metric Units: E.g. Feet(ft) to Inches(in)?
-
-One common gripe about the `convert` function is that it doesn't propagate unit definitions. 
-This results in situations where a conversion of inches to feet might be interpreted as an attempt to convert inches to femto-tonnes, resulting in an error: `Measure("12 in",Unit.IMPERIAL_UNITS).convert("ft")` throws a UnitException for incompatible units.
-This is because the user failed to re-define `"ft"` in the conversion function. 
-The proper way to convert to any non-metric unit is to define the unit in either convert or in the passed unit: `Measure("12 in",Unit.IMPERIAL_UNITS).convert("ft",Unit.IMPERIAL_UNITS)` or `Measure("12 in",Unit.IMPERIAL_UNITS).convert(Unit("ft",Unit.IMPERIAL_UNITS))`.
-
-# Less Frequently Asked Questions
 
 ## Can the module be made Faster?
 

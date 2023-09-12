@@ -150,12 +150,46 @@ class TestMeasureStr:
         assert Measure("24x10^3 cm").units == Unit("10^3 cm")
         assert Measure("24x10^3 cm").error == Decimal("0.5")
         assert Measure("24x10^3 cm").implied == True
+      # Unitless Magnitude
+      if(True):
+        # Magnitude without Multiplier
+        assert Measure("24 10^3").value == Decimal("24")
+        assert Measure("24 10^3").units == Unit("10^3")
+        assert Measure("24 10^3").error == Decimal("0.5")
+        assert Measure("24 10^3").implied == True
+        # Magnitude with * Multiplier
+        assert Measure("24 * 10^3").value == Decimal("24")
+        assert Measure("24 * 10^3").units == Unit("10^3")
+        assert Measure("24 * 10^3").error == Decimal("0.5")
+        assert Measure("24 * 10^3").implied == True
+        # Magnitude with x Multiplier
+        assert Measure("24 x 10^3").value == Decimal("24")
+        assert Measure("24 x 10^3").units == Unit("10^3")
+        assert Measure("24 x 10^3").error == Decimal("0.5")
+        assert Measure("24 x 10^3").implied == True
+        # Magnitude with \u00B7 Multiplier
+        assert Measure("24 \u00B7 10^3").value == Decimal("24")
+        assert Measure("24 \u00B7 10^3").units == Unit("10^3")
+        assert Measure("24 \u00B7 10^3").error == Decimal("0.5")
+        assert Measure("24 \u00B7 10^3").implied == True
+        # Magnitude with \u00D7 Multiplier
+        assert Measure("24 \u00D7 10^3").value == Decimal("24")
+        assert Measure("24 \u00D7 10^3").units == Unit("10^3")
+        assert Measure("24 \u00D7 10^3").error == Decimal("0.5")
+        assert Measure("24 \u00D7 10^3").implied == True
+        # Magnitude with x Multiplier No Spaces
+        assert Measure("24x10^3").value == Decimal("24")
+        assert Measure("24x10^3").units == Unit("10^3")
+        assert Measure("24x10^3").error == Decimal("0.5")
+        assert Measure("24x10^3").implied == True
+      
       # Unitless
       if(True):
         assert Measure("36").value == Decimal("36")
         assert Measure("36").units == Unit()
         assert Measure("36").error == Decimal("0.5")
         assert Measure("36").implied == True
+      
     # Parenthetical Error Notation
     if(True):
       assert Measure("24(3)cm").value == Decimal("24")
@@ -299,7 +333,6 @@ class TestMeasureStr:
         assert Measure("36 \u00B1 4").error == Decimal("4")
         assert Measure("36 \u00B1 4").implied == False
   def test_str(self):
-    #print(Measure("5 m^2",value="2")) # To String and also parse with this
     
     # Error Notations
     if(True):
@@ -326,6 +359,7 @@ class TestMeasureStr:
         assert Measure("12345678(3410)").to_string(uncertain_places=2,notation=1) == "12345700(34)"
         # Rounding Uncertain Places
         assert Measure("12.543(123)cm").to_string(uncertain_places=2,notation=1) == "12.54(12) cm"
+    
     # String Parser Reversibility 
     # Note: Any additions here should be made to test_parse
     if(True):
@@ -397,6 +431,38 @@ class TestMeasureStr:
           assert Measure(str(Measure("36"))).units == Unit()
           assert Measure(str(Measure("36"))).error == Decimal("0.5")
           assert Measure(str(Measure("36"))).implied == True
+        # Unitless Magnitude
+        if(True):
+          # Magnitude without Multiplier
+          assert Measure(str(Measure("24 10^3"))).value == Decimal("24")
+          assert Measure(str(Measure("24 10^3"))).units == Unit("10^3")
+          assert Measure(str(Measure("24 10^3"))).error == Decimal("0.5")
+          assert Measure(str(Measure("24 10^3"))).implied == True
+          # Magnitude with * Multiplier
+          assert Measure(str(Measure("24 * 10^3"))).value == Decimal("24")
+          assert Measure(str(Measure("24 * 10^3"))).units == Unit("10^3")
+          assert Measure(str(Measure("24 * 10^3"))).error == Decimal("0.5")
+          assert Measure(str(Measure("24 * 10^3"))).implied == True
+          # Magnitude with x Multiplier
+          assert Measure(str(Measure("24 x 10^3"))).value == Decimal("24")
+          assert Measure(str(Measure("24 x 10^3"))).units == Unit("10^3")
+          assert Measure(str(Measure("24 x 10^3"))).error == Decimal("0.5")
+          assert Measure(str(Measure("24 x 10^3"))).implied == True
+          # Magnitude with \u00B7 Multiplier
+          assert Measure(str(Measure("24 \u00B7 10^3"))).value == Decimal("24")
+          assert Measure(str(Measure("24 \u00B7 10^3"))).units == Unit("10^3")
+          assert Measure(str(Measure("24 \u00B7 10^3"))).error == Decimal("0.5")
+          assert Measure(str(Measure("24 \u00B7 10^3"))).implied == True
+          # Magnitude with \u00D7 Multiplier
+          assert Measure(str(Measure("24 \u00D7 10^3"))).value == Decimal("24")
+          assert Measure(str(Measure("24 \u00D7 10^3"))).units == Unit("10^3")
+          assert Measure(str(Measure("24 \u00D7 10^3"))).error == Decimal("0.5")
+          assert Measure(str(Measure("24 \u00D7 10^3"))).implied == True
+          # Magnitude with x Multiplier No Spaces
+          assert Measure(str(Measure("24x10^3"))).value == Decimal("24")
+          assert Measure(str(Measure("24x10^3"))).units == Unit("10^3")
+          assert Measure(str(Measure("24x10^3"))).error == Decimal("0.5")
+          assert Measure(str(Measure("24x10^3"))).implied == True
       # Parenthetical Error Notation
       if(True):
         assert Measure(str(Measure("24(3)cm"))).value == Decimal("24")
@@ -539,10 +605,12 @@ class TestMeasureStr:
           assert Measure(str(Measure("36 \u00B1 4"))).units == Unit()
           assert Measure(str(Measure("36 \u00B1 4"))).error == Decimal("4")
           assert Measure(str(Measure("36 \u00B1 4"))).implied == False
+    
     # Unit Notation Tests 
     if(True):
       # Single inverse units 1/$
       assert str((Unit("cm/$")/Measure("3(1)cm"))) == "0.3333333333333333333333333333 ± 0.1111111111111111111111111111 / $"
+  
   def test_repr(self):
     # These tests should be redundant to str parser tests.
     assert eval(repr(Measure("$2.4e-3(22)"))) == Measure("$2.4e-3(22)")

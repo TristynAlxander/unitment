@@ -921,8 +921,12 @@ class Unit:
         numerator_list      = list: 
         denominator_list    = list: 
       '''
-      # Format
+      # Sanitize Input
       unit_str = str(unit_str)
+      unit_str = unit_str.strip()
+      # Early Exit
+      if(unit_str == ""): return [],[]
+      # Format
       for m in Unit.MULTIPLIERS: unit_str = unit_str.replace(m,"*")
       # Initialize Lists for Outputs
       numerator_list   = []
@@ -1522,7 +1526,7 @@ class Measure:
   
   # Simplification Functions 
   if(True):
-    def convert(self,new_unit,defs=None,definitions=None,_base_units_=False):
+    def convert(self,*args,defs=None,definitions=None,_base_units_=False):
       """
       Converts a measure in one unit to a measure in another unit.
       Conversions do not (and should not) propagate unit definitions, so conversions to non-metric require the definition in the conversion function.
@@ -1533,9 +1537,17 @@ class Measure:
       # See Section "Convert Self to Base Units" below for more.
       # 
       
+      # Allow dictionary as arbitrary arguments.
+      dict_args = [_ for _ in args if isinstance(_,dict)]
+      non_dict  = [_ for _ in args if _ not in dict_args]
+      if(len(non_dict)!=1): 
+        if(len(non_dict)>1): raise ValueError("Too many non-dictionary arguments.")
+        if(len(non_dict)<1): raise ValueError("No Unit argument.")
+      new_unit = non_dict[0]
+      
       # Cast New Unit as Unit
       if(Unit.is_unit(new_unit)):
-        new_unit = Unit(new_unit,defs=defs,definitions=definitions)
+        new_unit = Unit(new_unit,*dict_args,defs=defs,definitions=definitions)
         new_base_unit  = new_unit._decomposed_
         self_base_unit = self._units_._decomposed_
       else: raise TypeError("Cannot be cast as Unit")
@@ -2786,10 +2798,4 @@ Number.register(Measure)
 
 if (__name__ == "__main__"):
   if(main_args.test):
-    
-    Measure("8.31446261815324 J⋅K-1⋅mol-1")
-    #assert Measure("8.31446261815324 J K-1 mol-1") == Measure("8.31446261815324 J*K-1*mol-1")
-    #assert Measure("8.31446261815324 J K-1 mol-1") == Measure("8.31446261815324 J⋅K-1⋅mol-1")
-    #assert Measure("8.31446261815324 J K-1 mol-1") == Measure("8.31446261815324 J⋅K−1⋅mol−1")
-    
     pass

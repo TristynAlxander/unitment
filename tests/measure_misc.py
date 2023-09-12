@@ -187,12 +187,17 @@ class TestPracticals:
   # R  = Measure("8.31446261815324 J K-1 mol-1")
   # R  = Measure("8.31446261815324 J⋅K-1⋅mol-1")
   # R  = Measure("8.31446261815324 J⋅K−1⋅mol−1")
-    
+  # To-DO: This Failed
+  # N_A  = Measure("6.02214076 × 10^23")
+  # N_A  = Measure("6.02214076 * 10^23")
   
   # Assorted Past Failures
   def test_failures(self):
+    Measure("6.02214076 × 10^23")
+    Measure("6.02214076 * 10^23")
     # Past Failed Units
     pass
+    
   # Exact Unit Conversion.
   def test_conversion_constants(self):
     
