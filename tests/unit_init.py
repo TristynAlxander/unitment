@@ -4521,6 +4521,12 @@ class TestUnitInit:
             assert Unit(magnitude="10e1").numerators   == ()
             assert Unit(magnitude="10e1").denominators == ()
             assert Unit(magnitude="10e1").magnitude    == Decimal("10e1")
+            # Normal Exponent 
+            assert Unit(magnitude="10^6").symbols      == ()
+            assert Unit(magnitude="10^6").numerators   == ()
+            assert Unit(magnitude="10^6").denominators == ()
+            assert Unit(magnitude="10^6").magnitude    == Decimal("1e6")
+            
           # Negative Magnitude
           if(True):
             # Standard Notation

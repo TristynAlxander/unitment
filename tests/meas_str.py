@@ -75,8 +75,6 @@ if(True):
 class TestMeasureStr:
   
   # Test 0.0 with implied error for Reversibility
-  
-  
   def test_parse(self):
     # Note: Any additions here should be made to test_str String Parser Reversibility 
     # No Error Notation
@@ -333,6 +331,8 @@ class TestMeasureStr:
         assert Measure("36 \u00B1 4").error == Decimal("4")
         assert Measure("36 \u00B1 4").implied == False
   def test_str(self):
+    
+    # To-Do: .to_string(uncertain_places=False,notation=1)
     
     # Error Notations
     if(True):

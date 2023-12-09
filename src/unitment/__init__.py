@@ -780,6 +780,8 @@ class Unit:
         elif(isinstance(magnitude,Number)):
           if(magnitude < 0):  log.warning("Negative Magnitude on Unit.")
           if(magnitude == 0): log.warning("Magnitude of Zero.")
+        elif(isinstance(magnitude,str)):
+          magnitude = Unit._parse_magnitude_(magnitude)
         else: 
           magnitude = Decimal(magnitude)
           if(magnitude < 0):  log.warning("Negative Magnitude on Unit.")
@@ -1785,8 +1787,8 @@ class Measure:
         place_magnitude = Decimal("1"+(uncertain_places-1)*"0")
         value_magnitude = Measure._certain_digit_magnitude_(value)
         error_magnitude = Measure._certain_digit_magnitude_(self.error)
-        if(value_magnitude<=error_magnitude): log.debug("Value and Error_magnitude are very close.")
-        if(value_magnitude<place_magnitude/error_magnitude): log.debug("Rounds Non-Decimal Digit.")
+        if(value_magnitude<=error_magnitude):                 log.debug("Value and Error_magnitude are very close.")
+        if(value_magnitude<place_magnitude/error_magnitude):  log.debug("Rounds Non-Decimal Digit.")
         value = round(value/error_magnitude*place_magnitude)*error_magnitude/place_magnitude
       # To String
       value_str = str(Measure._pretty_decimal_(value))

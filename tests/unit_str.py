@@ -133,6 +133,7 @@ class TestUnitStr:
     assert Unit("10^6 $") == Unit(numerators=["$"],magnitude=Decimal("1e6"))
     # Extra Spaces
     assert Unit("10^5  cm^3  /  a  *  mol") == Unit(["cm","cm","cm", "mol"],["a"],"1e5")
+    
   def test_str(self):
     # explicit_exponents,explicit_mult,negative_exponents
     the_unit = Unit(["cm","cm","cm","a"],["mol"],1)
