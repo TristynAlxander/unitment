@@ -89,6 +89,11 @@ if(True):
       log_file.setFormatter(logging.Formatter("{asctime} {levelname:<8}  {name:<50}  {message}", style="{"))
       log.addHandler(log_file)
 
+
+# To-Do
+# except: -> except Exception:
+
+
 # Utility Functions
 def _is_(lam,*a,**k):
   try:
@@ -604,6 +609,7 @@ class Unit:
         if(not allow_conversion and base_conversion!=None): base_magnitude, base_symbols, base_conversion = (1,[(derived_symbol,1)],None)
         # Distribute Derived Exponents into Base-Symbols.
         for base_numerator,base_exponent in base_symbols:
+          base_exponent,derived_exponent = _type_corrections_(base_exponent,derived_exponent)
           units,exponents = Unit._add_to_unit_exponent_lists_(units,exponents,base_numerator,base_exponent,derived_exponent)
         # Modify Magnitude for Base Unit Conversion
         magnitude_modifier,base_magnitude,derived_exponent =_type_corrections_(magnitude_modifier,base_magnitude,derived_exponent)
@@ -1376,7 +1382,7 @@ class Unit:
       is_measure = lambda x: isinstance(x,Measure)
       # Get Exponent
       if(is_number(other)):    exp = other if(isinstance(other,Number)) else Decimal(other)
-      elif(is_unit(other)):    exp = Unit(other).magnitude if Unit(other).dimensionless() else None
+      elif(is_unit(other)):    exp = Unit(other).magnitude  if Unit(other).dimensionless()           else None
       elif(is_measure(other)): exp = other.simplify().value if other.simplify().unit.dimensionless() else None
       else: return NotImplemented
       if(exp == None): raise ValueError(f"Exponent of the Unit is not a Number: {other}")
@@ -2801,3 +2807,5 @@ Number.register(Measure)
 if (__name__ == "__main__"):
   if(main_args.test):
     pass
+    
+      

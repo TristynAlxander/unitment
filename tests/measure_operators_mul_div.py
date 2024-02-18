@@ -72,6 +72,9 @@ if(True):
   from unitment import AmbiguousUnitException,IncompatibleUnitException,UnitException,Unit,Measure
   import unitment as measure
 
+# Multiplication & Division Operators
+# To-Do: "1 * 5 cm" is a measure. "cm" is a Unit Fix this.
+
 class TestMeasureOperatorsMul:
   # Error Formula
   # sig**2 = d/dx(x*y)**2 dx**2 + d/dy(x*y)**2 dy **2
@@ -12654,25 +12657,74 @@ class TestMeasureOperatorsDiv:
               Measure(value=x,error=dx,unit=xu)  /  Measure(value=y,error=dy,unit=yu)
   
   def test_measure_unit_div(self):
-    pass
+    # Measure (Explicit Error) * Unit = Measure (Explicit Error)
+    if(True): 
+      # Canceling
+      assert Measure("4(2)cm")   / Unit("cm/$")       == Measure("4(2)$")
+    # Unit * Measure (Explicit Error) = Measure (Explicit Error)
+    if(True):
+      # Canceling
+      assert (Unit("cm/$")/Measure("3(1)cm")).approx(Measure("0.33333(11111)/$"))
+    
   
   def test_measure_decimal_div(self):
-    pass
-  
+    # Values & Certainties
+    assert Measure("4(2)cm") / Decimal("2") == Measure("2(1)cm")
+    assert (Decimal("2") / Measure("3(1)cm")).approx(Measure("0.66666(22222)cm^-1"))
+    # Implied Uncertainty
+    assert (Measure("3cm")  / Decimal("2")).implied == True
+    # Divide by Zero Errors
+    with pytest.raises(Exception):
+      assert Measure("3cm")  / Decimal("0")
+    
   def test_measure_int_div(self):
-    pass
+    # Values & Certainties
+    assert Measure("4(2)cm") /          2   == Measure("2(1)cm")
+    assert (         2   / Measure("3(1)cm")).approx(Measure("0.66666(22222)cm^-1"))
+    # Implied Uncertainty
+    assert (Measure("3cm")  /          2  ).implied == True
+    # Divide by Zero Errors
+    with pytest.raises(Exception):
+      assert Measure("3cm")  / 0
   
   def test_measure_float_div(self):
     pass
   
   def test_measure_str_measure_div(self):
-    pass
+    # Values, Certainties, Canceling
+    assert (Measure("3(1)cm") / "4(2)cm").approx(Measure("0.75(45)"))
+    assert ("3(1)cm" / Measure("4(2)cm")).approx(Measure("0.75(45)"))
+    # Implied Uncertainty
+    assert (Measure("3cm") / "4(2)cm").implied == True
+    assert ("3cm" / Measure("4(2)cm")).implied == True
+    assert Measure("5 m^2",value="2") / "5 m^2" == Measure("2")
+    assert "20 m^2" / Measure("5 m^2",value="2") == Measure("2")
+    # Divide By Zero
+    with pytest.raises(Exception):
+      Measure("3 cm")/"0 m"
+    with pytest.raises(Exception):
+      "3 cm"/Measure("0 m")
+    # Weird unitss 
+    assert Measure("26.85 \u00B0C") / "26.85 \u00B0C" == Measure("1")
+    assert "26.85 \u00B0C" / Measure("26.85 \u00B0C") == Measure("1")
+    assert Measure("5 carrot") / "1 pig" == Measure("5 carrot / pig")
+    assert "5 carrot" / Measure("1 pig") == Measure("5 carrot / pig")
+    # Past Failed Units
+    assert (Measure("5cm")/"1 min").units == Unit("cm/min")
+    assert ("5cm"/Measure("1 min")).units == Unit("cm/min")
   
   def test_measure_str_unit_div(self):
     pass
   
   def test_measure_str_decimal_div(self):
-    pass
+    # Values & Certainties
+    assert Measure("4(2)cm") /         "2"  == Measure("2(1)cm")
+    assert (        "2"  / Measure("3(1)cm")).approx(Measure("0.66666(22222)cm^-1"))
+    # Implied Uncertainty
+    assert (Measure("3cm")  /         "2" ).implied == True
+    # Divide by Zero Errors
+    with pytest.raises(Exception):
+      assert Measure("3cm")  / "0"
   
   def test_practical_div(self):
     assert (Measure("5cm")/Measure("1 min")).units == Unit("cm/min")
